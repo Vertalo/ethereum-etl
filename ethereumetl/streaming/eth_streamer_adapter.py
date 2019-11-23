@@ -14,7 +14,7 @@ from ethereumetl.streaming.enrich import enrich_transactions, enrich_logs, enric
 from ethereumetl.streaming.eth_item_id_calculator import EthItemIdCalculator
 from ethereumetl.thread_local_proxy import ThreadLocalProxy
 from web3 import Web3
-
+import requests
 
 class EthStreamerAdapter:
     def __init__(
@@ -35,7 +35,9 @@ class EthStreamerAdapter:
         self.item_exporter.open()
 
     def get_current_block_number(self):
-        return int(Web3(self.batch_web3_provider).eth.getBlock("latest").number)
+        endpoint = self.batch_web3_provider.endpoint_uri
+        r = requests.post(endpoint, json={"jsonrpc":"2.0","method":"eth_blockNumber","params": [],"id":1})
+        return int(r.json()['result'],16)
 
     def export_all(self, start_block, end_block):
         # Export blocks and transactions
